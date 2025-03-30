@@ -62,8 +62,8 @@ This PostgreSQL MCP server implements:
    MCP Inspector is up and running at http://localhost:5173
    ```
 
-   If the browser doesn't open automatically, copy and paste the URL into your browser.
-
+   If the browser doesn't open automatically, copy and paste the URL into your browser. You should see something like this:
+   ![MCP Inspector Interface](inspector-screenshot.png)
 3. **Using the Inspector:**
    - Click the "Connect" button in the interface (unless there's an error message in the console on the bottom left)
    - Explore the "Tools", "Resources", and "Prompts" tabs to see available functionality
@@ -76,7 +76,7 @@ This PostgreSQL MCP server implements:
 
    More on the inspector: https://modelcontextprotocol.io/docs/tools/inspector
 
-## MCP Configuration
+## Connect Your AI Tool to the Server
 
 You can configure the MCP server for your AI assistant by creating an MCP configuration file:
 
@@ -111,6 +111,15 @@ chmod +x generate_mcp_config.sh
 ```
 
 When prompted, enter your PostgreSQL DSN and schema name.
+
+### How to use it
+
+You can now ask the LLM questions about your data in natural language:
+- "What are all the tables in my database?"
+- "Show me the top 5 users by creation date"
+- "Count addresses by state"
+
+For testing, Claude Desktop supports MCP natively and works with all features (tools, resources, and prompts) right out of the box.
 
 ## Example Database (Optional)
 
