@@ -4,6 +4,8 @@ This is a template project for those looking to build their own MCP servers. I d
 
 ## What is MCP?
 
+*TL;DR - It's a way to write plugins for AI*
+
 Model Context Protocol (MCP) is a standard way for LLMs to interact with external tools and data. In a nutshell:
 
 - **Tools** allow the LLM to execute commands (like running a database query)
@@ -52,10 +54,13 @@ This PostgreSQL MCP server implements:
    npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://username:password@hostname:port/database -e SCHEMA=public
    ```
 
-   After running this command, you'll see the MCP Inspector interface in your browser:
-
+   After running this command, you'll see the MCP Inspector interface in your browser, play with it:
    ![MCP Inspector Interface](inspector-screenshot.png)
-More on the inspector: https://modelcontextprotocol.io/docs/tools/inspector
+3. **Take a look at the official docs**
+
+   Official server developers guide: https://modelcontextprotocol.io/quickstart/server
+
+   More on the inspector: https://modelcontextprotocol.io/docs/tools/inspector
 
 ## MCP Configuration
 
