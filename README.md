@@ -19,7 +19,7 @@ This PostgreSQL MCP server implements:
    - `test_connection` - Verify the database connection is working
 
 2. **Resources**
-   - The list of tables in database schema
+   - The server checks which tables exist, list them, and when choosing one the schema is attached to the prompt
 
 3. **Prompts**
    - Query generation templates
@@ -41,14 +41,16 @@ This PostgreSQL MCP server implements:
 
 ## Installation and Running
 
-1. Install dependencies:
+1. Create a virtual environment and install dependencies:
    ```
-   pip install -r requirements.txt
+   uv venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv pip install -r requirements.txt
    ```
 
 2. Run the server with the MCP Inspector:
    ```
-   npx @modelcontextprotocol/inspector uv --directory . run postgres -e DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@host:5432/my-db"
+   npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://postgres:postgres@localhost:5432/user_database -e SCHEMA=public
    ```
 
 More on the inspector: https://modelcontextprotocol.io/docs/tools/inspector
@@ -78,42 +80,6 @@ You may need to put the full path to the uv executable in the command field. You
   }
 }
 ```
-
-## First Flow
-
-Here's a step-by-step guide to get started with this PostgreSQL MCP server:
-
-1. **Set up your environment**
-   ```
-   # Create and activate virtual environment
-   python -m venv .venv
-   source .venv/bin/activate  # On macOS/Linux
-   # Or: .venv\Scripts\activate  # On Windows
-   
-   # Install dependencies
-   pip install -r requirements.txt
-   ```
-
-2. **Configure your database connection**
-   - Edit the DSN in your configuration to point to your PostgreSQL database
-   - Make sure your database is running and accessible
-
-3. **Start the MCP server**
-   ```
-   npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN="postgresql://username:password@localhost:5432/my-db" -e SCHEMA="public"
-   ```
-
-4. **Test the connection**
-   - Use the `test_connection` tool to verify everything is working
-   - Try a simple query like: `SELECT version();`
-
-5. **Run your first query**
-   - Use the `execute_query` tool with a SQL query
-   - Example: `SELECT * FROM your_table LIMIT 5;`
-
-6. **Explore your schema**
-   - The server automatically provides schema information as a resource
-   - Ask your AI assistant about available tables and their structures
 
 ## Security
 
