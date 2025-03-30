@@ -94,33 +94,70 @@ async def execute_query(
     except Exception as e:
         return f"Error: {str(e)}"
 
+# Database helper functions
+async def get_all_tables(pool, schema):
+    """Get all tables from the database"""
+    async with pool.acquire() as conn:
+        result = await conn.fetch("""
+            SELECT c.relname AS table_name
+            FROM pg_class AS c
+            JOIN pg_namespace AS n ON n.oid = c.relnamespace
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM pg_inherits AS i
+                WHERE i.inhrelid = c.oid
+            )
+            AND c.relkind IN ('r', 'p')
+            AND n.nspname = $1
+            AND c.relname NOT LIKE 'pg_%'
+            ORDER BY c.relname;
+        """, schema)
+        
+        return result
+
+async def get_table_schema_info(pool, schema, table_name):
+    """Get schema information for a specific table"""
+    async with pool.acquire() as conn:
+        columns = await conn.fetch("""
+            SELECT
+                column_name,
+                data_type,
+                is_nullable,
+                column_default,
+                character_maximum_length
+            FROM information_schema.columns
+            WHERE table_schema = $1
+            AND table_name = $2
+            ORDER BY ordinal_position;
+        """, schema, table_name)
+        
+        return columns
+
+def format_table_schema(table_name, columns):
+    """Format table schema into readable text"""
+    if not columns:
+        return f"Table '{table_name}' not found."
+        
+    result = [f"Table: {table_name}", "Columns:"]
+    for col in columns:
+        nullable = "NULL" if col['is_nullable'] == 'YES' else "NOT NULL"
+        length = f"({col['character_maximum_length']})" if col['character_maximum_length'] else ""
+        default = f" DEFAULT {col['column_default']}" if col['column_default'] else ""
+        result.append(f"- {col['column_name']} ({col['data_type']}{length}) {nullable}{default}")
+    
+    return "\n".join(result)
+
 @mcp.resource("db://tables")
 async def list_tables() -> str:
     """List all tables in the database"""
     try:
-        # Create a new context manager for database access
         async with db_lifespan(mcp) as db_ctx:
-            pool = db_ctx.pool
-            async with pool.acquire() as conn:
-                result = await conn.fetch("""
-                    SELECT c.relname AS table_name
-                    FROM pg_class AS c
-                    JOIN pg_namespace AS n ON n.oid = c.relnamespace
-                    WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM pg_inherits AS i
-                        WHERE i.inhrelid = c.oid
-                    )
-                    AND c.relkind IN ('r', 'p')
-                    AND n.nspname = $1
-                    AND c.relname NOT LIKE 'pg_%'
-                    ORDER BY c.relname;
-                """, db_ctx.schema)
-                
-                if not result:
-                    return f"No tables found in the {db_ctx.schema} schema."
+            result = await get_all_tables(db_ctx.pool, db_ctx.schema)
+            
+            if not result:
+                return f"No tables found in the {db_ctx.schema} schema."
 
-                return "\n".join(row['table_name'] for row in result)
+            return "\n".join(row['table_name'] for row in result)
     except asyncpg.exceptions.PostgresError as e:
         return f"SQL Error: {str(e)}"
     except Exception as e:
@@ -132,35 +169,39 @@ async def get_table_schema(table_name: str) -> str:
     try:
         schema = os.environ.get("SCHEMA", DEFAULT_SCHEMA)
 
-        # By design, context should be available for resources, too. This is still WIP, see:
-        #   https://github.com/modelcontextprotocol/python-sdk/pull/248
         async with db_lifespan(mcp) as db_ctx:
-            pool = db_ctx.pool
-            async with pool.acquire() as conn:
-                columns = await conn.fetch("""
-                    SELECT
-                        column_name,
-                        data_type,
-                        is_nullable,
-                        column_default,
-                        character_maximum_length
-                    FROM information_schema.columns
-                    WHERE table_schema = $1
-                    AND table_name = $2
-                    ORDER BY ordinal_position;
-                """, schema, table_name)
+            columns = await get_table_schema_info(db_ctx.pool, schema, table_name)
+            
+            if not columns:
+                return f"Table '{table_name}' not found in {schema} schema."
+            
+            return format_table_schema(table_name, columns)
+    except asyncpg.exceptions.PostgresError as e:
+        return f"SQL Error: {str(e)}"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
-                if not columns:
-                    return f"Table '{table_name}' not found in {schema} schema."
-
-                result = [f"Table: {table_name}", "Columns:"]
-                for col in columns:
-                    nullable = "NULL" if col['is_nullable'] == 'YES' else "NOT NULL"
-                    length = f"({col['character_maximum_length']})" if col['character_maximum_length'] else ""
-                    default = f" DEFAULT {col['column_default']}" if col['column_default'] else ""
-                    result.append(f"- {col['column_name']} ({col['data_type']}{length}) {nullable}{default}")
-
-                return "\n".join(result)
+@mcp.resource("db://schema")
+async def get_all_schemas() -> str:
+    """Get schema information for all tables in the database"""
+    try:
+        schema = os.environ.get("SCHEMA", DEFAULT_SCHEMA)
+        
+        async with db_lifespan(mcp) as db_ctx:
+            tables = await get_all_tables(db_ctx.pool, db_ctx.schema)
+            
+            if not tables:
+                return f"No tables found in the {db_ctx.schema} schema."
+            
+            all_schemas = []
+            for table in tables:
+                table_name = table['table_name']
+                columns = await get_table_schema_info(db_ctx.pool, schema, table_name)
+                table_schema = format_table_schema(table_name, columns)
+                all_schemas.append(table_schema)
+                all_schemas.append("") # Add empty line between tables
+            
+            return "\n".join(all_schemas)
     except asyncpg.exceptions.PostgresError as e:
         return f"SQL Error: {str(e)}"
     except Exception as e:

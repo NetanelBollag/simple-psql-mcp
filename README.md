@@ -21,7 +21,9 @@ This PostgreSQL MCP server implements:
    - `test_connection` - Verify the database connection is working
 
 2. **Resources**
-   - The server expose the list of tables in the schema as a resource
+   - `db://tables` - List of all tables in the schema
+   - `db://tables/{table_name}` - Schema information for a specific table
+   - `db://schema` - Complete schema information for all tables in the database
 
 3. **Prompts**
    - Query generation templates
