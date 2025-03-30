@@ -1,0 +1,7 @@
+annotated-types==0.7.0
+asyncpg==0.30.0
+pydantic==2.11.1
+pydantic-core==2.33.0
+pyyaml==6.0.2
+typing-extensions==4.13.0
+typing-inspection==0.4.0

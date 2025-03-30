@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Keep it simple and readable
+
+- Write clear, concise code with descriptive variable names
+- Add docstrings to explain purpose of functions and classes
+- Avoid complicated patterns or over-engineering
+
+
+# Follow Python best practices
+
+- Use type hints consistently
+- Follow PEP 8 style guidelines
+- Organize imports properly (standard library first, then third-party, then local)
+- Use async/await for database operations
+- Functions should be small
+- Use helper functions to re-use code
+
+
+# Implement features gradually
+
+- Start with basic structure following FastMCP patterns
+- Keep database connections simple using asyncpg
+- Implement proper error handling for database operations
+- Add validation checks for user inputs
+
+
+# Make the output human-friendly
+
+- Format query results in an easy-to-read way
+- Provide clear error messages
+- Structure schema information logically
+
+

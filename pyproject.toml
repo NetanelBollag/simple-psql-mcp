@@ -1,0 +1,24 @@
+[project]
+name = "simple-psql-mcp"
+version = "0.1.0"
+description = "A PostgreSQL MCP server project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+ "aiohttp>=3.11.13",
+ "mcp>=1.3.0",
+ "pyyaml>=6.0.2",
+]
+[[project.authors]]
+name = "Netanel Bollag"
+email = "nbollag@gmail.com"
+
+[build-system]
+requires = [ "hatchling",]
+build-backend = "hatchling.build"
+
+[project.scripts]
+postgres = "src.postgres:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
