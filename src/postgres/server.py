@@ -130,6 +130,8 @@ async def list_tables() -> str:
 async def get_table_schema(table_name: str) -> str:
     """Get schema information for a specific table"""
     try:
+        schema = os.environ.get("SCHEMA", DEFAULT_SCHEMA)
+
         # By design, context should be available for resources, too. This is still WIP, see:
         #   https://github.com/modelcontextprotocol/python-sdk/pull/248
         async with db_lifespan(mcp) as db_ctx:
@@ -143,13 +145,13 @@ async def get_table_schema(table_name: str) -> str:
                         column_default,
                         character_maximum_length
                     FROM information_schema.columns
-                    WHERE table_schema = 'global_attribution'
-                    AND table_name = $1
+                    WHERE table_schema = $1
+                    AND table_name = $2
                     ORDER BY ordinal_position;
-                """, table_name)
+                """, schema, table_name)
 
                 if not columns:
-                    return f"Table '{table_name}' not found in global_attribution schema."
+                    return f"Table '{table_name}' not found in {schema} schema."
 
                 result = [f"Table: {table_name}", "Columns:"]
                 for col in columns:
