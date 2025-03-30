@@ -19,7 +19,7 @@ This PostgreSQL MCP server implements:
    - `test_connection` - Verify the database connection is working
 
 2. **Resources**
-   - The server checks which tables exist, list them, and when choosing one the schema is attached to the prompt
+   - The server expose the list of tables in the schema as a resource
 
 3. **Prompts**
    - Query generation templates
