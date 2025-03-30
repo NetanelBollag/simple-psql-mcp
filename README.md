@@ -26,46 +26,46 @@ This PostgreSQL MCP server implements:
    - Analytical query builders
    - Based on the templates in this repo
 
-## Documentation
-
-- MCP docs included for easy LLM development
-- Based on the approach at: https://modelcontextprotocol.io/tutorials/building-mcp-with-llms
-- Python SDK is only accurate to the day of creation, so please RTFM and copy paste it on your own
-
 ## Prerequisites
 
 - Python 3.8+
-- pip
-- npx
-- PostgreSQL database you feel comfortable to connect to LLM
+- [uv](https://github.com/astral-sh/uv) - Modern Python package manager and installer
+- npx (included with Node.js)
+- PostgreSQL database you can connect to
 
-## Installation and Running
+## Quick Setup
 
-1. Create a virtual environment and install dependencies:
-   ```
+1. **Create a virtual environment and install dependencies:**
+   ```bash
+   # Create a virtual environment with uv
    uv venv
+   
+   # Activate the virtual environment
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   
+   # Install dependencies
    uv pip install -r requirements.txt
    ```
 
-2. Run the server with the MCP Inspector:
-   ```
-   npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://postgres:postgres@localhost:5432/user_database -e SCHEMA=public
+2. **Run the server with the MCP Inspector:**
+   ```bash
+   npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://username:password@hostname:port/database -e SCHEMA=public
    ```
 
+   After running this command, you'll see the MCP Inspector interface in your browser:
+
+   ![MCP Inspector Interface](inspector-screenshot.png)
 More on the inspector: https://modelcontextprotocol.io/docs/tools/inspector
 
-## Configuration for AI Assistants
+## MCP Configuration
 
-Add this MCP server to your AI assistant's configuration:
-
-You may need to put the full path to the uv executable in the command field. You can get this by running `which uv` on MacOS/Linux or `where uv` on Windows.
+You can configure the MCP server for your AI assistant by creating an MCP configuration file:
 
 ```json
 {
   "mcpServers": {
     "postgres": {
-      "command": "/Users/username/.local/bin/uv",
+      "command": "/path/to/uv",
       "args": [
         "--directory",
         "/path/to/simple-psql-mcp",
@@ -80,6 +80,61 @@ You may need to put the full path to the uv executable in the command field. You
   }
 }
 ```
+
+Alternatively, you can generate this config file using the included script:
+
+```bash
+# Make the script executable
+chmod +x generate_mcp_config.sh
+
+# Run the configuration generator
+./generate_mcp_config.sh
+```
+
+When prompted, enter your PostgreSQL DSN and schema name.
+
+## Example Database (Optional)
+
+If you don't have a database ready or encounter connection issues, you can use the included example database:
+
+```bash
+# Make the script executable
+chmod +x example-db/create-db.sh
+
+# Run the database setup script
+./example-db/create-db.sh
+```
+
+This script creates a Docker container with a PostgreSQL database pre-populated with sample users and addresses tables. After running, you can connect using:
+
+```bash
+npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://postgres:postgres@localhost:5432/user_database -e SCHEMA=public
+```
+
+## Next Steps
+
+To extend this project with your own MCP servers:
+
+1. Create a new directory under `/src` (e.g., `/src/my-new-mcp`)
+2. Implement your MCP server following the PostgreSQL example
+3. Add your new MCP to `pyproject.toml`:
+
+```toml
+[project.scripts]
+postgres = "src.postgres:main"
+my-new-mcp = "src.my-new-mcp:main"
+```
+
+You can then run your new MCP with:
+
+```bash
+npx @modelcontextprotocol/inspector uv --directory . run my-new-mcp
+```
+
+## Documentation
+
+- MCP docs included for easy LLM development
+- Based on the approach at: https://modelcontextprotocol.io/tutorials/building-mcp-with-llms
 
 ## Security
 
