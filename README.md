@@ -51,12 +51,26 @@ This PostgreSQL MCP server implements:
 
 2. **Run the server with the MCP Inspector:**
    ```bash
+   # Replace with YOUR actual database credentials
    npx @modelcontextprotocol/inspector uv --directory . run postgres -e DSN=postgresql://username:password@hostname:port/database -e SCHEMA=public
    ```
 
-   After running this command, you'll see the MCP Inspector interface in your browser, play with it:
-   ![MCP Inspector Interface](inspector-screenshot.png)
-3. **Take a look at the official docs**
+   > Note: If this is your first time running npx, you'll be prompted to approve the installation. Type 'y' to proceed.
+
+   After running this command, you'll see the MCP Inspector interface launched in your browser. You should see a message like:
+   ```
+   MCP Inspector is up and running at http://localhost:5173
+   ```
+
+   If the browser doesn't open automatically, copy and paste the URL into your browser.
+
+3. **Using the Inspector:**
+   - Click the "Connect" button in the interface (unless there's an error message in the console on the bottom left)
+   - Explore the "Tools", "Resources", and "Prompts" tabs to see available functionality
+   - Try clicking on listed commands or typing resource names to retrieve resources and prompts
+   - The interface allows you to test queries and see how the MCP server responds
+
+4. **Take a look at the official docs**
 
    Official server developers guide: https://modelcontextprotocol.io/quickstart/server
 
@@ -68,21 +82,21 @@ You can configure the MCP server for your AI assistant by creating an MCP config
 
 ```json
 {
-  "mcpServers": {
-    "postgres": {
-      "command": "/path/to/uv",
-      "args": [
-        "--directory",
-        "/path/to/simple-psql-mcp",
-        "run",
-        "postgres"
-      ],
-      "env": {
-        "DSN": "postgresql://username:password@localhost:5432/my-db",
-        "SCHEMA": "public"
+   "mcpServers": {
+      "postgres": {
+         "command": "/path/to/uv",
+         "args": [
+            "--directory",
+            "/path/to/simple-psql-mcp",
+            "run",
+            "postgres"
+         ],
+         "env": {
+            "DSN": "postgresql://username:password@localhost:5432/my-db",
+            "SCHEMA": "public"
+         }
       }
-    }
-  }
+   }
 }
 ```
 
