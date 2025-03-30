@@ -84,7 +84,7 @@ DECLARE
   i INTEGER;
 BEGIN
   -- Get max IDs
-  SELECT COALESCE(MAX(address_id), 0) INTO max_address_id FROM addresses;
+  SELECT COALESCE(MAX(addresses.address_id), 0) INTO max_address_id FROM addresses;
   SELECT COALESCE(MAX(user_id), 0) INTO max_user_id FROM users;
   
   -- Generate 1000 new records
