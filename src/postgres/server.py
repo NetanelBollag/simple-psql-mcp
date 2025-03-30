@@ -132,32 +132,33 @@ async def get_table_schema(table_name: str) -> str:
     try:
         # By design, context should be available for resources, too. This is still WIP, see:
         #   https://github.com/modelcontextprotocol/python-sdk/pull/248
-        pool = mcp.lifespan_context.pool
-        async with pool.acquire() as conn:
-            columns = await conn.fetch("""
-                SELECT 
-                    column_name,
-                    data_type,
-                    is_nullable,
-                    column_default,
-                    character_maximum_length
-                FROM information_schema.columns
-                WHERE table_schema = 'global_attribution'
-                AND table_name = $1
-                ORDER BY ordinal_position;
-            """, table_name)
-            
-            if not columns:
-                return f"Table '{table_name}' not found in global_attribution schema."
-            
-            result = [f"Table: {table_name}", "Columns:"]
-            for col in columns:
-                nullable = "NULL" if col['is_nullable'] == 'YES' else "NOT NULL"
-                length = f"({col['character_maximum_length']})" if col['character_maximum_length'] else ""
-                default = f" DEFAULT {col['column_default']}" if col['column_default'] else ""
-                result.append(f"- {col['column_name']} ({col['data_type']}{length}) {nullable}{default}")
-            
-            return "\n".join(result)
+        async with db_lifespan(mcp) as db_ctx:
+            pool = db_ctx.pool
+            async with pool.acquire() as conn:
+                columns = await conn.fetch("""
+                    SELECT
+                        column_name,
+                        data_type,
+                        is_nullable,
+                        column_default,
+                        character_maximum_length
+                    FROM information_schema.columns
+                    WHERE table_schema = 'global_attribution'
+                    AND table_name = $1
+                    ORDER BY ordinal_position;
+                """, table_name)
+
+                if not columns:
+                    return f"Table '{table_name}' not found in global_attribution schema."
+
+                result = [f"Table: {table_name}", "Columns:"]
+                for col in columns:
+                    nullable = "NULL" if col['is_nullable'] == 'YES' else "NOT NULL"
+                    length = f"({col['character_maximum_length']})" if col['character_maximum_length'] else ""
+                    default = f" DEFAULT {col['column_default']}" if col['column_default'] else ""
+                    result.append(f"- {col['column_name']} ({col['data_type']}{length}) {nullable}{default}")
+
+                return "\n".join(result)
     except asyncpg.exceptions.PostgresError as e:
         return f"SQL Error: {str(e)}"
     except Exception as e:
